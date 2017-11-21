@@ -67,9 +67,11 @@ if __name__ == '__main__':
         # Print headers results
         with Host(0, 'IP Address') as host:
             host.mac = 'MAC Address'
+            host.netbios_name = 'NBT NAME'
+            host.netbios_group = 'NBT GROUP'
             host.fqdn = 'Fully qualified domain name'
             print host
-            print '-' * 80
+            print '-' * 100
         # Print sorted results, waiting for the end-of-loop sentinel
         for status in sorted(iter(done_queue.get, 'STOP'),
                              key=lambda host: host.index):

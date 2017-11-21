@@ -30,6 +30,8 @@ class Host(object):
         self.address = address
         self.mac = ''
         self.fqdn = ''
+        self.netbios_name = ''
+        self.netbios_group = ''
 
     def arping(self):
         """Launch arping to the current host"""
@@ -42,15 +44,34 @@ class Host(object):
         else:
             return False
 
+    def netbios(self):
+        """Launch nmblookup to the current host"""
+        arguments = ['nmblookup', '-A', '-S', self.address]
+        process = Process(arguments)
+        for line in process.run().split('\n'):
+            # <00> Identifies the workstation
+            if '<00>' in line:
+                if '<GROUP>' in line:
+                    self.netbios_group = line.split('<')[0].strip()
+                else:
+                    self.netbios_name = line.split('<')[0].strip()
+
     def scan(self):
         """Execute scan"""
         self.fqdn = socket.getfqdn(self.address)
         self.arping()
-        return self.mac
+        if self.mac:
+            self.netbios()
+        return self.mac or self.netbios_name or self.netbios_group
 
     def __repr__(self):
         """Format results"""
-        return ('{:<15}  {:<17}'.format(self.address, self.mac))
+        return ('{:<15}  {:<17}  {:<15}  {:<15}  {:<30}'.format(
+                self.address,
+                self.mac,
+                self.netbios_name,
+                self.netbios_group,
+                self.fqdn))
 
     def __enter__(self):
         """Enter for with"""
