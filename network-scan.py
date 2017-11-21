@@ -30,9 +30,7 @@ class Host(object):
         self.index = index
         self.address = address
         self.mac = ''
-        self.netbios_name = ''
-        self.netbios_group = ''
-        self.netbios_mac = ''
+        self.fqdn = ''
 
     def arping(self):
         arguments = ['arping', '-f', '-c', '1', '-I', 'eth0', self.address]
@@ -103,9 +101,6 @@ if __name__ == '__main__':
         # Print headers results
         with Host(0, 'IP Address') as host:
             host.mac = 'MAC Address'
-            host.netbios_name = 'NBT NAME'
-            host.netbios_group = 'NBT GROUP'
-            host.netbios_mac = 'MAC-Address'
             host.fqdn = 'Fully qualified domain name'
             print host
             print '-' * 80
