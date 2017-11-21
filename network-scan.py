@@ -19,18 +19,9 @@
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 ##
 
-import multiprocessing
 
 from network_scan.host import Host
-
-
-def consume(working_queue, done_queue):
-    """Cycle the working queue for each worker until the 'STOP' is found"""
-    for host in iter(working_queue.get, 'STOP'):
-        if host.scan():
-            # Add results to the done queue
-            done_queue.put(host)
-    return True
+from network_scan.scanner import Scanner
 
 
 # Launch scan when called from main script
@@ -39,30 +30,10 @@ if __name__ == '__main__':
         print 'Unable to detect localhost, maybe arping lacks permissions?'
     else:
         # Scan network
-        max_workers = 10
-        subnet = '192.168.1'
-        working_queue = multiprocessing.Queue()
-        done_queue = multiprocessing.Queue()
-        for host in xrange(1, 70 + 1):
-            address = '%s.%d' % (subnet, host)
-            # Add the host scanner to the working queue
-            working_queue.put(Host(host, address))
-        # Consume processes
-        processes = []
-        for worker in xrange(max_workers):
-            process = multiprocessing.Process(target=consume,
-                                              args=(working_queue,
-                                                    done_queue))
-            # Add a consumer process to the queue
-            process.start()
-            processes.append(process)
-            # Add an end-of-loop sentinel for iter for each worker
-            working_queue.put('STOP')
-        # Wait for completion
-        for process in processes:
-            process.join()
-        # Add an end-of-loop sentinel for the done work queue
-        done_queue.put('STOP')
+        scanner = Scanner(subnet='192.168.1',
+                          starting_host=1,
+                          ending_host=70)
+        scanner.start(max_workers=10)
 
         # Print headers results
         with Host(0, 'IP Address') as host:
@@ -73,6 +44,6 @@ if __name__ == '__main__':
             print host
             print '-' * 100
         # Print sorted results, waiting for the end-of-loop sentinel
-        for status in sorted(iter(done_queue.get, 'STOP'),
+        for status in sorted(iter(scanner.done_queue.get, 'STOP'),
                              key=lambda host: host.index):
             print status
