@@ -63,20 +63,3 @@ class Host(object):
         if self.mac:
             self.netbios()
         return self.mac or self.netbios_name or self.netbios_group
-
-    def __repr__(self):
-        """Format results"""
-        return ('{:<15}  {:<17}  {:<15}  {:<15}  {:<30}'.format(
-                self.address,
-                self.mac,
-                self.netbios_name,
-                self.netbios_group,
-                self.fqdn))
-
-    def __enter__(self):
-        """Enter for with"""
-        return self
-
-    def __exit__(self, type, value, traceback):
-        """Exit for with"""
-        return False
