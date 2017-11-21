@@ -20,6 +20,7 @@
 
 import subprocess
 
+
 class Process(object):
     """Launch an external process and return its output"""
     def __init__(self, arguments):
