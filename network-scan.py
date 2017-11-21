@@ -19,47 +19,9 @@
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 ##
 
-import socket
 import multiprocessing
 
-from network_scan.process import Process
-
-class Host(object):
-    """Define a host to scan"""
-    def __init__(self, index, address):
-        self.index = index
-        self.address = address
-        self.mac = ''
-        self.fqdn = ''
-
-    def arping(self):
-        """Launch arping to the current host"""
-        arguments = ['arping', '-f', '-c', '1', '-I', 'eth0', self.address]
-        process = Process(arguments)
-        for line in process.run().split('\n'):
-            if 'reply' in line:
-                self.mac = line.split('[')[1].split(']')[0]
-                return True
-        else:
-            return False
-
-    def scan(self):
-        """Execute scan"""
-        self.fqdn = socket.getfqdn(self.address)
-        self.arping()
-        return self.mac
-
-    def __repr__(self):
-        """Format results"""
-        return ('{:<15}  {:<17}'.format(self.address, self.mac))
-
-    def __enter__(self):
-        """Enter for with"""
-        return self
-
-    def __exit__(self, type, value, traceback):
-        """Exit for with"""
-        return False
+from network_scan.host import Host
 
 
 def consume(working_queue, done_queue):
