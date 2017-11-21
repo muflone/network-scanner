@@ -19,11 +19,10 @@
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 ##
 
-import subprocess
 import socket
 import multiprocessing
 
-ieee_oui = {}
+from network_scan.process import Process
 
 class Host(object):
     def __init__(self, index, address):
@@ -34,11 +33,8 @@ class Host(object):
 
     def arping(self):
         arguments = ['arping', '-f', '-c', '1', '-I', 'eth0', self.address]
-        process = subprocess.Popen(args=arguments,
-                                   stdout=subprocess.PIPE,
-                                   stderr=subprocess.PIPE)
-        (stdout, stderr) = process.communicate()
-        for line in stdout.split('\n'):
+        process = Process(arguments)
+        for line in process.run().split('\n'):
             if 'reply' in line:
                 self.mac = line.split('[')[1].split(']')[0]
                 return True
