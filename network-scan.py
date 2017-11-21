@@ -22,6 +22,7 @@
 
 from network_scan.host import Host
 from network_scan.scanner import Scanner
+from network_scan.ieee_oui import IEEE_OUI
 
 
 # Launch scan when called from main script
@@ -29,6 +30,9 @@ if __name__ == '__main__':
     if not Host(0, 'localhost').arping():
         print 'Unable to detect localhost, maybe arping lacks permissions?'
     else:
+        # Load IEEE OUI database
+        ieee_oui = IEEE_OUI()
+        ieee_oui.load('docs/oui.txt')
         # Scan network
         scanner = Scanner(subnet='192.168.1',
                           starting_host=1,
@@ -36,21 +40,23 @@ if __name__ == '__main__':
         scanner.start(max_workers=10)
 
         # Print headers results
-        print '{:<15}  {:<17}  {:<15}  {:<15}  {:<30}'.format(
+        print '{:<15}  {:<17}  {:<15}  {:<15}  {:<30} {}'.format(
             'IP Address',
             'MAC Address',
             'NBT Name',
             'NBT Group',
             'Fully qualified domain name',
+            'Vendor'
             )
-        print '-' * 100
+        print '-' * 160
         # Print sorted results, waiting for the end-of-loop sentinel
         for host in sorted(iter(scanner.done_queue.get, 'STOP'),
                            key=lambda host: host.index):
-            print '{:<15}  {:<17}  {:<15}  {:<15}  {:<30}'.format(
+            print '{:<15}  {:<17}  {:<15}  {:<15}  {:<30} {}'.format(
                   host.address,
                   host.mac,
                   host.netbios_name,
                   host.netbios_group,
-                  host.fqdn
+                  host.fqdn,
+                  ieee_oui.get(host.mac.upper()[:8])
                   )
